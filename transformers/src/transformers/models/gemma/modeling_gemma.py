@@ -219,7 +219,8 @@ class GemmaAttention(nn.Module):
         self.hidden_size = config.hidden_size
         self.num_heads = config.num_attention_heads
         self.head_dim = config.head_dim
-        self.num_key_value_heads = (num_key_value_heads if num_key_value_heads != None else config.num_key_value_heads)
+        self.num_key_value_heads = num_key_value_heads
+        print("Gemma Attention Modelling",self.num_key_value_heads, layer_idx)
         self.num_key_value_groups = self.num_heads // self.num_key_value_heads
         self.max_position_embeddings = config.max_position_embeddings
         self.rope_theta = config.rope_theta
@@ -511,6 +512,7 @@ class GemmaDecoderLayer(nn.Module):
         self.hidden_size = config.hidden_size
         
         num_key_value_heads = 1 if config.mqa_layers[layer_idx] == 1 else config.num_key_value_heads
+        print("Inside Gemma Decoder layer - ", num_key_value_heads)
 
         self.self_attn = GEMMA_ATTENTION_CLASSES[config._attn_implementation](config=config, layer_idx=layer_idx, num_key_value_heads=num_key_value_heads)
         

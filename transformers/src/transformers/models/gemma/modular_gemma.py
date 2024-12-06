@@ -112,8 +112,6 @@ class GemmaConfig(PretrainedConfig):
             Whether to use a bias in the query, key, value and output projection layers during self-attention.
         attention_dropout (`float`, *optional*, defaults to 0.0):
             The dropout ratio for the attention probabilities.
-        mqa_layers ('List', *optional*, defaults to [0]*num_hidden_layers (Full MHA)):
-            The bool list indicating which layers to convert to MQA.
     ```python
     >>> from transformers import GemmaModel, GemmaConfig
     >>> # Initializing a Gemma gemma-7b style configuration
@@ -149,7 +147,6 @@ class GemmaConfig(PretrainedConfig):
         rope_theta=10000.0,
         attention_bias=False,
         attention_dropout=0.0,
-        mqa_layers=[0],
         **kwargs,
     ):
         self.vocab_size = vocab_size
@@ -168,7 +165,6 @@ class GemmaConfig(PretrainedConfig):
         self.rope_theta = rope_theta
         self.attention_bias = attention_bias
         self.attention_dropout = attention_dropout
-        self.mqa_layers = (mqa_layers if len(mqa_layers) == self.num_hidden_layers else [0] * self.num_hidden_layers)
 
         super().__init__(
             pad_token_id=pad_token_id,
@@ -442,7 +438,7 @@ class GemmaMLP(nn.Module):
 class GemmaAttention(nn.Module):
     """Multi-headed attention from 'Attention Is All You Need' paper"""
 
-    def __init__(self, config: GemmaConfig, layer_idx: Optional[int] = None, num_key_value_heads=None):
+    def __init__(self, config: GemmaConfig, layer_idx: Optional[int] = None, num_key_value_heads = None):
         super().__init__()
         self.config = config
         self.layer_idx = layer_idx
@@ -457,7 +453,8 @@ class GemmaAttention(nn.Module):
         self.hidden_size = config.hidden_size
         self.num_heads = config.num_attention_heads
         self.head_dim = config.head_dim
-        self.num_key_value_heads = (num_key_value_heads if num_key_value_heads != None else config.num_key_value_heads)
+        self.num_key_value_heads = num_key_value_heads
+        print("Gemma Attention Modular",self.num_key_value_heads, layer_idx)
         self.num_key_value_groups = self.num_heads // self.num_key_value_heads
         self.max_position_embeddings = config.max_position_embeddings
         self.rope_theta = config.rope_theta
@@ -738,9 +735,10 @@ GEMMA_ATTENTION_CLASSES = {
 class GemmaDecoderLayer(LlamaDecoderLayer):
     def __init__(self, config: GemmaConfig, layer_idx: int):
         super().__init__(config)
-        
-        
+        self.hidden_size = config.hidden_size
+        print("Decoder Layer",config.mqa_layers[layer_idx])
         num_key_value_heads = 1 if config.mqa_layers[layer_idx] == 1 else config.num_key_value_heads
+
         self.self_attn = GEMMA_ATTENTION_CLASSES[config._attn_implementation](config=config, layer_idx=layer_idx, num_key_value_heads=num_key_value_heads)
         
         self.mlp = GemmaMLP(config)
