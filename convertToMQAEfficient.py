@@ -51,6 +51,10 @@ def modify_and_save_gemma(model_name, bool_flags_mqa, save_path):
     print(f"Saving the modified model to: {save_path}")
     new_model.save_pretrained(save_path)
 
+    tokenizer = AutoTokenizer.from_pretrained(model_name)
+    tokenizer.save_pretrained(save_path)
+
+
     
 
 

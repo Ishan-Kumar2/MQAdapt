@@ -511,6 +511,7 @@ class GemmaDecoderLayer(nn.Module):
         self.hidden_size = config.hidden_size
         
         num_key_value_heads = 1 if config.mqa_layers[layer_idx] == 1 else config.num_key_value_heads
+        print("CHECK Attention Heads Decoder layer:", num_key_value_heads)
 
         self.self_attn = GEMMA_ATTENTION_CLASSES[config._attn_implementation](config=config, layer_idx=layer_idx, num_key_value_heads=num_key_value_heads)
         
@@ -993,6 +994,7 @@ class GemmaForCausalLM(GemmaPreTrainedModel, GenerationMixin):
 
     def __init__(self, config):
         super().__init__(config)
+        print("CHECK: Coming to MQAdapt gemma")
         self.model = GemmaModel(config)
         self.vocab_size = config.vocab_size
         self.lm_head = nn.Linear(config.hidden_size, config.vocab_size, bias=False)

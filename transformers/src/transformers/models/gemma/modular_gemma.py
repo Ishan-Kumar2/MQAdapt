@@ -952,6 +952,7 @@ class GemmaModel(LlamaModel):
 class GemmaForCausalLM(LlamaForCausalLM):
     def __init__(self, config):
         super().__init__(config)
+        print("CHECK: Coming to MQAdapt gemma")
         self.model = GemmaModel(config)
         self.post_init()
 
