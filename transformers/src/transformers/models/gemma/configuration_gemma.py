@@ -82,6 +82,8 @@ class GemmaConfig(PretrainedConfig):
             Whether to use a bias in the query, key, value and output projection layers during self-attention.
         attention_dropout (`float`, *optional*, defaults to 0.0):
             The dropout ratio for the attention probabilities.
+        mqa_layers ('List', *optional*, defaults to [0]*num_hidden_layers (Full MHA)):
+            The bool list indicating which layers to convert to MQA.
     ```python
     >>> from transformers import GemmaModel, GemmaConfig
     >>> # Initializing a Gemma gemma-7b style configuration
@@ -117,6 +119,7 @@ class GemmaConfig(PretrainedConfig):
         rope_theta=10000.0,
         attention_bias=False,
         attention_dropout=0.0,
+        mqa_layers=[0],
         **kwargs,
     ):
         self.vocab_size = vocab_size
@@ -135,6 +138,7 @@ class GemmaConfig(PretrainedConfig):
         self.rope_theta = rope_theta
         self.attention_bias = attention_bias
         self.attention_dropout = attention_dropout
+        self.mqa_layers = (mqa_layers if len(mqa_layers) == self.num_hidden_layers else [0] * self.num_hidden_layers)
 
         super().__init__(
             pad_token_id=pad_token_id,
